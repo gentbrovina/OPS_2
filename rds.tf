@@ -26,7 +26,7 @@ resource "aws_security_group" "db_security_group" {
     from_port   = 3306
     to_port     = 3306
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # Adjust this to your desired access
+    cidr_blocks = ["10.0.0.0/16"]  # Adjust this to your desired access
   }
 
   // Egress rule to allow outbound traffic (example: all traffic)
@@ -43,6 +43,8 @@ resource "aws_security_group" "db_security_group" {
 resource "aws_db_instance" "database-instance" {
   instance_class          = "${var.database-instance-class}"
   skip_final_snapshot     = true
+  engine                  = "postgres"
+  engine_version          = "12.15"
   availability_zone       = "eu-central-1a"
   identifier              = "${var.database-instance-indetifier}"
   snapshot_identifier     = data.aws_db_snapshot.latest-db-snapshot.id

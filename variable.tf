@@ -54,7 +54,7 @@ variable "database-snapshot-identifier" {
 }
 
 variable "database-instance-class" {
-  default = "db.t2.micro"
+  default = "db.t3.micro"
   description = "The Database Instance Type"
   type = string
 }

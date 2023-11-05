@@ -1,7 +1,8 @@
 #Define the ecr repo
-resource "aws_ecr_repository" "demo_app_ecr_repo" {
-  name = var.ecr_repo_name
+resource "aws_ecr_repository" "my_repository" {
+  name = "my-ecr-repo"   # Change this to a valid name with at least 2 characters
 }
+
 resource "aws_ecs_cluster" "Cluster" {
   name = "Gent-cluster"
 
@@ -53,8 +54,7 @@ resource "aws_alb" "application_load_balancer" {
   load_balancer_type = "application"
   subnets = [
     "${aws_subnet.private-subnet-1.id}",
-    "${aws_subnet.private-subnet-2.id}",
-    "${aws_subnet.private-subnet-3.id}"
+    "${aws_subnet.private-subnet-4.id}",
   ]
   security_groups = ["${aws_security_group.load_balancer_security_group.id}"]
 }
@@ -106,7 +106,7 @@ resource "aws_ecs_service" "demo_app_service" {
   }
 
   network_configuration {
-    subnets          = ["${aws_subnet.private-subnet-1.id}", "${aws_subnet.private-subnet-2.id}", "${aws_subnet.private-subnet-3.id}"]
+    subnets          = ["${aws_subnet.private-subnet-1.id}", "${aws_subnet.private-subnet-2.id}"]
     assign_public_ip = true
     security_groups  = ["${aws_security_group.service_security_group.id}"]
   }
