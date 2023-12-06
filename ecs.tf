@@ -1,10 +1,10 @@
 #Define the ecr repo
 resource "aws_ecr_repository" "my_repository" {
-  name = "my-ecr-repo"   # Change this to a valid name with at least 2 characters
+  name = "my-ecr-repo"  
 }
-
+#Define the ecs cluster
 resource "aws_ecs_cluster" "Cluster" {
-  name = "Gent-cluster"
+  name = "my-ecs-cluster"
 
   setting {
     name  = "containerInsights"
@@ -12,9 +12,10 @@ resource "aws_ecs_cluster" "Cluster" {
   }
 }
 
-#Ecs part
+##Define the ecs task defenition
 resource "aws_ecs_task_definition" "demo_app_task" {
   family                   = var.demo_app_task_famliy
+ 
   container_definitions    = <<DEFINITION
   [
     {
@@ -32,7 +33,6 @@ resource "aws_ecs_task_definition" "demo_app_task" {
     }
   ]
   DEFINITION
-  requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
   memory                   = 512
   cpu                      = 256
@@ -49,67 +49,34 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
-resource "aws_alb" "application_load_balancer" {
-  name               = var.application_load_balancer_name
-  load_balancer_type = "application"
-  subnets = [
-    "${aws_subnet.private-subnet-1.id}",
-    "${aws_subnet.private-subnet-4.id}",
-  ]
-  security_groups = ["${aws_security_group.load_balancer_security_group.id}"]
-}
-
-resource "aws_security_group" "load_balancer_security_group" {
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-resource "aws_lb_target_group" "target_group" {
-  name        = var.target_group_name
-  port        = var.container_port
-  protocol    = "HTTP"
-  target_type = "ip"
-  vpc_id      = aws_vpc.vpc.id
-}
-
-resource "aws_lb_listener" "listener" {
-  load_balancer_arn = aws_alb.application_load_balancer.arn
-  port              = "80"
-  protocol          = "HTTP"
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.target_group.arn
-  }
-}
-
 resource "aws_ecs_service" "demo_app_service" {
   name            = var.demo_app_service_name
   cluster         = aws_ecs_cluster.Cluster.id
   task_definition = aws_ecs_task_definition.demo_app_task.arn
-  launch_type     = "FARGATE"
-  desired_count   = 1
+  desired_count   = 2
 
   load_balancer {
     target_group_arn = aws_lb_target_group.target_group.arn
     container_name   = aws_ecs_task_definition.demo_app_task.family
     container_port   = var.container_port
   }
-
+  force_new_deployment = true
+  placement_constraints {
+   type = "distinctInstance"
+ }
+ triggers = {
+   redeployment = timestamp()
+ }
+ capacity_provider_strategy {
+   capacity_provider = aws_ecs_capacity_provider.ecs_capacity_provider.name
+   weight            = 100
+ }
   network_configuration {
-    subnets          = ["${aws_subnet.private-subnet-1.id}", "${aws_subnet.private-subnet-2.id}"]
+    subnets          = ["${aws_subnet.private-subnet-3.id}", "${aws_subnet.private-subnet-4.id}"]
     assign_public_ip = true
     security_groups  = ["${aws_security_group.service_security_group.id}"]
   }
+  depends_on = [aws_autoscaling_group.ecs_asg]
 }
 
 resource "aws_security_group" "service_security_group" {

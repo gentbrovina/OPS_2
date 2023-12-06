@@ -1,6 +1,6 @@
 # VPC Variables
 variable "region" {
-  default       = "us-central-1"
+  default       = "eu-central-1"
   description   = "AWS Region"
   type          = string
 }
@@ -47,7 +47,7 @@ variable "private-subnet-4-cidr" {
   type          = string
 }
 variable "database-snapshot-identifier" {
-  default = "arn:aws:rds:eu-central-1:888659321129:snapshot:gent-snapshot"
+  default     = "arn:aws:rds:eu-central-1:888659321129:snapshot:gent-snapshot"
   description = "Database snapshot ARN"
   type = string
 
@@ -79,12 +79,11 @@ variable "demo_app_cluster_name" {
   description = "ECS Cluster Name"
   type        = string
 }
-/*
+
 variable "availability_zones" {
   description = "eu-central-1 AZs"
   type        = list(string)
 }
-*/
 
 variable "demo_app_task_famliy" {
   description = "ECS Task Family"

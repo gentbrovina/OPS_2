@@ -1,4 +1,3 @@
-
 # Create Database Subnet Group
 # terraform aws db subnet group
 resource "aws_db_subnet_group" "database-subnet-group" {
@@ -10,7 +9,6 @@ resource "aws_db_subnet_group" "database-subnet-group" {
     Name = "Database Subnets"
   }
 }
-
 # Get the Latest DB Snapshot
 # terraform aws data db snapshot
 data "aws_db_snapshot" "latest-db-snapshot" {
@@ -37,7 +35,6 @@ resource "aws_security_group" "db_security_group" {
     cidr_blocks = ["0.0.0.0/0"]  # Adjust this to your desired egress rules
   }
 }
-
 # Create Database Instance Restored from DB Snapshots
 # terraform aws db instance
 resource "aws_db_instance" "database-instance" {

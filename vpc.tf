@@ -2,7 +2,6 @@
 # terraform aws create vpc
 resource "aws_vpc" "vpc" {
   cidr_block              = "${var.vpc-cidr}"
-  instance_tenancy        = "default"
   enable_dns_hostnames    = true
 
   tags      = {
@@ -27,7 +26,7 @@ resource "aws_eip" "nat_eip" {
 resource "aws_nat_gateway" "Gent_nat_gateway" {
   depends_on = [aws_eip.nat_eip]
   allocation_id = aws_eip.nat_eip.id
-  subnet_id = aws_subnet.private-subnet-1.id
+  subnet_id = ["${aws_subnet.private-subnet-1.id}", "${aws_subnet.private-subnet-2.id}",]
   tags = {
     "Name" = "Gent_nat_gateway"
   }
@@ -63,7 +62,6 @@ resource "aws_subnet" "public-subnet-2" {
 # terraform aws create route table
 resource "aws_route_table" "public-route-table" {
   vpc_id       = aws_vpc.vpc.id
-
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.internet-gateway.id
